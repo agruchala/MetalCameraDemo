@@ -11,17 +11,11 @@ import CoreGraphics
 import CoreImage
 
 class MetalView: MTKView {
-    // 1
-    private enum Constants {
-        static let roundingFactor2x: CGFloat = 500
-        static let roundingFactor3x: CGFloat = 1000
-    }
     
-    var context: CIContext? // 2
-    var queue: MTLCommandQueue? // 3
-    var commandBuffer: MTLCommandBuffer? // 4
-    let colorSpace = CGColorSpaceCreateDeviceRGB() // 5
-    var image: CIImage? { // 6
+    var context: CIContext!
+    var queue: MTLCommandQueue!
+    let colorSpace = CGColorSpaceCreateDeviceRGB()
+    var image: CIImage? {
         didSet {
             DispatchQueue.main.async {
                 self.drawCIImge()
@@ -29,7 +23,6 @@ class MetalView: MTKView {
         }
     }
 
-    // 7
     required init(coder: NSCoder) {
         super.init(coder: coder)
         self.isOpaque = false
@@ -55,27 +48,28 @@ class MetalView: MTKView {
     }
     
     private func drawCIImge() {
-        guard let image = image,
-            let texture = currentDrawable?.texture,
-            let buffer = queue?.makeCommandBuffer()
-            else { return }
-        // 8
-        let imageSize = image.extent.size
-        let sizeScale = bounds.width / imageSize.width * layer.contentsScale
-        let roundingFactor = layer.contentsScale == 2 ? Constants.roundingFactor2x : Constants.roundingFactor3x
-        let sizeScaleRounded = CGFloat(ceil(sizeScale * roundingFactor) / roundingFactor)
-        let scaledImage = image.transformed(by: CGAffineTransform(scaleX: sizeScaleRounded, y: sizeScaleRounded))
-        let xPos = 0
-        let yPos = 0
-        // 9
-        self.context!.render(scaledImage,
-                             to: texture,
-                             commandBuffer: buffer,
-                             bounds: CGRect(origin: CGPoint(x: xPos, y: yPos),
-                                            size: self.drawableSize),
-                             colorSpace: colorSpace)
-        guard let drawable = self.currentDrawable else { return }
-        // 10
+        guard let image = image else { return }
+        let drawable = currentDrawable!
+        let buffer = queue.makeCommandBuffer()!
+        
+        let widthScale = drawableSize.width / image.extent.width
+        let heightScale = drawableSize.height / image.extent.height
+        
+        let scale = min(widthScale, heightScale)
+        
+        let scaledImage = image.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
+        
+        let yPos = drawableSize.height / 2 - scaledImage.extent.height / 2
+        
+        let bounds = CGRect(x: 0, y: -yPos, width: drawableSize.width, height: drawableSize.height)
+        
+        
+        context.render(scaledImage,
+                       to: drawable.texture,
+                       commandBuffer: buffer,
+                       bounds: bounds,
+                       colorSpace: colorSpace)
+        
         buffer.present(drawable)
         buffer.commit()
         setNeedsDisplay()
