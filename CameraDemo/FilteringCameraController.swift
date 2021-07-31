@@ -20,6 +20,7 @@ class FilteringCameraController: NSObject {
     private var setupComplete = false
     private var captureVideoOrientation = AVCaptureVideoOrientation.portrait
     
+    // 1
     private lazy var filter: CIFilter = {
         let filterInternal = CIFilter(name: "CIComicEffect")!
         return filterInternal
@@ -27,6 +28,7 @@ class FilteringCameraController: NSObject {
     
     var flashMode = AVCaptureDevice.FlashMode.auto
     
+    // 2
     func prepareCamera(with previewView: UIView) {
         if setupComplete || AVCaptureDevice.authorizationStatus(for: .video) == .denied {
             return
@@ -40,7 +42,7 @@ class FilteringCameraController: NSObject {
         setupComplete = true
     }
     
-    
+    // 3
     private func setupInput(for cameraPosition: AVCaptureDevice.Position) {
         captureSessionQueue.async {
             self.prepareInput(for: cameraPosition)
@@ -52,6 +54,7 @@ class FilteringCameraController: NSObject {
         }
     }
     
+    // 4
     private func prepareInput(for cameraPosition: AVCaptureDevice.Position) {
         
         guard let videoDevice = captureDevice(with: AVMediaType.video.rawValue, position: cameraPosition) else {
@@ -70,6 +73,7 @@ class FilteringCameraController: NSObject {
         }
     }
     
+    // 5
     private func setupOutputs() {
         let videoDataOutput = AVCaptureVideoDataOutput()
         videoDataOutput.setSampleBufferDelegate(self, queue: self.captureSessionQueue)
@@ -79,6 +83,7 @@ class FilteringCameraController: NSObject {
         }
     }
     
+    // 6
     func startCamera() {
         if !setupComplete {
             return
@@ -93,6 +98,7 @@ class FilteringCameraController: NSObject {
         }
     }
     
+    // 7
     private func captureDevice(with mediaType: String, position: AVCaptureDevice.Position?) -> AVCaptureDevice? {
         let session = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: AVMediaType.video, position: .unspecified)
         let cameras = session.devices
@@ -123,6 +129,7 @@ class FilteringCameraController: NSObject {
     }
 }
 
+// 8
 extension FilteringCameraController: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAudioDataOutputSampleBufferDelegate {
     public func captureOutput(_ captureOutput: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         
