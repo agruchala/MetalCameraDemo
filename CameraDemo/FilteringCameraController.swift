@@ -142,6 +142,7 @@ extension FilteringCameraController: AVCaptureVideoDataOutputSampleBufferDelegat
         
         let filteredImage = filter.outputImage!
         
+        // 9
         let rotation = -CGFloat.pi
         let translationX: CGFloat = -1
         let rotated = filteredImage
@@ -151,6 +152,7 @@ extension FilteringCameraController: AVCaptureVideoDataOutputSampleBufferDelegat
         let transformed = rotated.transformed(by: .init(translationX: -rotated.extent.origin.x,
         y: -rotated.extent.origin.y))
         
+        // 10
         previewView.image = transformed
     }
 }
